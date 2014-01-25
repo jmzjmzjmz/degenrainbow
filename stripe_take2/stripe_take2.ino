@@ -39,7 +39,7 @@ int _i = 0, j = 0, k = 0;
 
 #define NUM_POLES 8
 
-#define myADDRESS 4
+#define myADDRESS 1
 #define mySETADDRESS 10
 #define globalADDR 0
 
@@ -55,6 +55,8 @@ unsigned int NUM_PIXELS = BOT_ROW + MAIN_ROW;
 unsigned int PATTERN_ROW = MAIN_ROW;
 
 int bottom_map[264+238];
+int scaled_bottom_map[264+238];
+int scaled_top_map[264+238];
 
 struct CRGB color;
 struct CRGB NULL_COLOR;
@@ -72,6 +74,7 @@ struct CRGB NULL_COLOR;
 unsigned int incomingBrightness=0;
 unsigned int incomingRate=0;
 unsigned int rate = 50;
+unsigned int frameOffset = 0;
 unsigned int patternByte = NULL_PATTERN;
 
 // unix timestamp that the sketch starts at
@@ -131,9 +134,20 @@ void setup() {
 
   //SPI0_CTAR0 |= 0x00000000; //<====== HERE
 
-//Create mapping scale array
+//Create look up table for normal bottom stripe
 for(int i = MAIN_ROW; i < NUM_PIXELS; i++){
 bottom_map[i] = (int)fscale(i,MAIN_ROW,NUM_PIXELS - 1,MAIN_ROW -1,0,-.05);
+}
+
+//i want to scale 
+//Create look up table for scaled bottom
+for(int i = MAIN_ROW; i < NUM_PIXELS; i++){
+scaled_bottom_map[i] = (int)fscale(i,MAIN_ROW,NUM_PIXELS - 1,MAIN_ROW -1,0,-.05);
+}
+
+//Create look up table for scaled top
+for(int i = MAIN_ROW; i < NUM_PIXELS; i++){
+scaled_top_map[i] = (int)fscale(i,MAIN_ROW,NUM_PIXELS - 1,MAIN_ROW -1,0,-.05);
 }
 
   
@@ -162,7 +176,7 @@ bottom_map[i] = (int)fscale(i,MAIN_ROW,NUM_PIXELS - 1,MAIN_ROW -1,0,-.05);
   patterns[79] = &colorWipeMeterGradient;
   patterns[80] = &pulseOnce;
 
-  pattern = &rainbowCycle;
+  pattern = &rainbow;
   pattern(-2, 0);
 
   startedAt = 0;
@@ -173,10 +187,10 @@ bottom_map[i] = (int)fscale(i,MAIN_ROW,NUM_PIXELS - 1,MAIN_ROW -1,0,-.05);
 
 void read() {
   
-  while (Serial.available()) {
+  while (Serial1.available()) {
 
 
-    char c = (char)Serial.read();
+    char c = (char)Serial1.read();
     // Serial.println(c, DEC);
     inputString += c;
     if (c == 128) {
@@ -212,6 +226,9 @@ void read() {
         
           rate = (unsigned char)inputString.charAt(1);// + 1;
           patternByte = (unsigned char)inputString.charAt(2);
+          //FIX
+          mappingByte = (unsigned char)inputString.charAt(2);
+
 
           r1 = (unsigned char)inputString.charAt(3);
           g1 = (unsigned char)inputString.charAt(5);
@@ -220,8 +237,8 @@ void read() {
           g2 = (unsigned char)inputString.charAt(8);
           b2 = (unsigned char)inputString.charAt(7);
           heartOffset = (unsigned char)inputString.charAt(9);
-          xFader = (unsigned char)inputString.charAt(11);
-          scaling = (unsigned char)inputString.charAt(10);
+          xFader = (unsigned char)inputString.charAt(10);
+          scaling = (unsigned char)inputString.charAt(11);
 
           brightness = ((unsigned char)inputString.charAt(12))/127.0;
 
@@ -255,13 +272,31 @@ void read() {
 
         }
 
+
+    Serial.println("vari'z:");
+       Serial.println(heartOffset);
+       Serial.println(xFader);
+       Serial.println(scaling);
+       Serial.println("frame ");
+       Serial.println(frame);
+       
+       Serial.println("===================== ");
+      
+
+
       }
 
       inputString = "";
 
     }
 
+     
+
   }
+
+
+
+
 
 
 
@@ -277,9 +312,9 @@ void setColors() {
   color2.g = g2;
   color2.b = b2;
   
-  color3.r = r3;
-  color3.g = g3;
-  color3.b = b3;
+  // color3.r = r3;
+  // color3.g = g3;
+  // color3.b = b3;
 
 }
 
@@ -327,6 +362,12 @@ freezeBool = false;
 
 }
 
+//frame offset
+if(heartOffset != 0){
+frameOffset = (heartOffset - 64) * 20;
+frame = frame + frameOffset;
+}
+
 
 
  // if (currentTime >= loopTime + rate) { 
@@ -342,14 +383,8 @@ freezeBool = false;
 
   for (_i = 0; _i < MAIN_ROW; _i++) {
 
-  // if(PATTERN_ROW == MAIN_ROW){
     int j = mapping(frame, _i);
-//    }
-//   // else it should mimic the top most stripe
-// else{
-//     // int j = mapping(frame, map(_i,0,MAIN_ROW,0,LEAD_ROW));
-//     int j = mapping(frame, (int)fscale(_i,0, LEAD_ROW - 1,0,MAIN_ROW - 1, -.05));
-// }
+
 
 color = pattern(frame, j);
 
