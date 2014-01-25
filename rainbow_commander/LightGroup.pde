@@ -1,3 +1,5 @@
+float MASTER_BRIGHTNESS = 1.0;
+
 class LightGroup {
 
   public final int address;
@@ -8,6 +10,9 @@ class LightGroup {
   public int mapping = 1;
   public int rate = 100;
   public int brightness = 127;
+  public int frameOffset = 0;
+  public int crossfadeDuration = 0;
+  public boolean fixedLength = false;
 
   // Would have liked to make these arrays, but controlP5's reflection makes that harder.
   // Also addListener didn't work for controlGroups :(
@@ -15,14 +20,19 @@ class LightGroup {
   public color color1 = color(0), color2 = color(0);
 
   public int r1, r2, g1, g2, b1, b2;
-  public float MASTER_BRIGHTNESS = 1.0;
 
   // Interface elements
   public final ColorPicker colorPicker1, colorPicker2;
   public final RadioButton patternList;
   public final RadioButton mappingList;
+
   public final Slider rateSlider;
   public final Slider brightnessSlider;
+
+  public final Slider frameOffsetSlider;
+  public final Slider crossfadeDurationSlider;
+  public final Toggle fixedLengthToggle;
+  
   public final Bang bang;
 
   // Just the order in which we created this group
@@ -77,6 +87,30 @@ class LightGroup {
              .setValue(brightness);
 
     y += PADDING * 2;
+
+    frameOffsetSlider = controlP5.addSlider("frame-offset-"+address)
+             .setPosition(x, y)
+             .setRange(0, 127)
+             .setSize(220, 20)
+             .setDecimalPrecision(0)
+             .setLabel("f offset")
+             .setValue(frameOffset);
+
+    y += PADDING * 2;
+
+    crossfadeDurationSlider = controlP5.addSlider("crossfade-duration-"+address)
+             .setPosition(x, y)
+             .setRange(0, 127)
+             .setSize(220, 20)
+             .setDecimalPrecision(0)
+             .setLabel("xfade")
+             .setValue(crossfadeDuration);
+
+    fixedLengthToggle = controlP5.addToggle("fixed-length-"+address)
+             .setPosition(x + 120, y + 200)
+             .setLabel("fix len");
+
+    y += PADDING * 2;
     
     patternList = controlP5.addRadioButton("patterns-" + address)
                            .setPosition(x , y)
@@ -111,7 +145,7 @@ class LightGroup {
 
     mappingList.activate(0);
   
-  
+    
 
 
   }
@@ -168,10 +202,6 @@ class LightGroup {
   public void setColor2(color c) {
     setColor2((int)red(c), (int)green(c), (int)blue(c));
   }
-  
-  public void setMasterBrightness(float bright) {
-    MASTER_BRIGHTNESS = bright; // h8 u cp5
-  }
 
   public void sendMessage() {
 
@@ -183,6 +213,11 @@ class LightGroup {
   }
 
   private void sendPatternMessage(int pattern) {
+
+    println(frameOffset);
+    println(crossfadeDuration);
+    println(fixedLength);
+    println("----");
 
     byte[] serialData = new byte[14];
     color color1 = colorPicker1.getColorValue();
@@ -204,9 +239,9 @@ class LightGroup {
     serialData[8] = (byte)(blue(color2)  /2*a);
 
     // Ignore third color.
-    serialData[9] = 0;
-    serialData[10] = 0;
-    serialData[11] = 0;
+    serialData[9] =  (byte)frameOffset;
+    serialData[10] = (byte)crossfadeDuration;
+    serialData[11] = (byte)(fixedLength ? 1 : 0);
 
     serialData[12] = (byte)(brightness * MASTER_BRIGHTNESS);
     serialData[13] = (byte)DELIMETER;

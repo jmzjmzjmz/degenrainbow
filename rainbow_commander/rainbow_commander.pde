@@ -55,7 +55,7 @@ LightGroup group4;
 
 final int LIGHT_GROUP_WIDTH = 270;
 final int RADIO_SIZE = 20;
-final int PADDING = 15;
+final int PADDING = 12;
 
 ControlP5 controlP5;
 
@@ -97,7 +97,7 @@ void setup() {
 
 
 
-  size(1370, 700);
+  size(1370, 800);
 
   patterns[80] = "pulseOnce";
   patterns[79] = "colorWipeMeterGradient";
@@ -159,7 +159,7 @@ void setup() {
   // groupVerticalPoles = new LightGroup("Vertical Poles", 7);
   groupPoles = new LightGroup("Stripe 1", 1);
   groupBoxes = new LightGroup("Stripe 2", 2);
-    group3 = new LightGroup("Stripe 3", 3);
+  group3 = new LightGroup("Stripe 3", 3);
   group4 = new LightGroup("Stripe 4", 4);
 
   sympathizeEvents = false;
@@ -167,7 +167,7 @@ void setup() {
 Slider masterBrightnessSlider;
 
 masterBrightnessSlider = controlP5.addSlider("MASTER_BRIGHTNESS")
-     .setPosition(30,665)
+     .setPosition(30,765)
      .setRange(0.0,1.0)
      .setSize(220, 20)
      .setValue(1.0)
@@ -383,9 +383,21 @@ LightGroup checkLightControllers(ControlEvent theEvent) {
       l.color2 = (color)theEvent.value();
       return l;
     }
-    if (theEvent.isFrom("MASTER_BRIGHTNESS")) {
-          l.setMasterBrightness(theEvent.value());
-        }
+
+    if (theEvent.isFrom(l.frameOffsetSlider)) {
+      l.frameOffset = (int)theEvent.value();
+      return l;
+    }
+
+    if (theEvent.isFrom(l.crossfadeDurationSlider)) {
+      l.crossfadeDuration = (int)theEvent.value();
+      return l;
+    }
+
+    if (theEvent.isFrom(l.fixedLengthToggle)) {
+      l.fixedLength = theEvent.value() == 1.0;
+      return l;
+    }
 
   }
 
