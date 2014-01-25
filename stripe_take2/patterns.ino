@@ -5,9 +5,9 @@ struct CRGB solidColor(long f, int pixelIndex) {
 
 struct CRGB colorWipe(long f, int pixelIndex) {
   if (f < 0) return NULL_COLOR;
-  if (pixelIndex < f % PATTERN_ROW-1)
+  if (pixelIndex < f % VIRTUAL_LENGTH-1)
     return color1;
-  if (pixelIndex==PATTERN_ROW)
+  if (pixelIndex==VIRTUAL_LENGTH)
     return color1;
   
   return color2;
@@ -22,7 +22,7 @@ struct CRGB rainbow(long f, int pixelIndex) {
 struct CRGB rainbowCycle(long f, int pixelIndex) {
   if (f < 0) return NULL_COLOR;
   int j = f % 384 * 5;			
-  return Wheel((pixelIndex * 384 / PATTERN_ROW + j));
+  return Wheel((pixelIndex * 384 / VIRTUAL_LENGTH + j));
 }
 
 struct CRGB colorAlternator(long f, int pixelIndex) {
@@ -52,7 +52,7 @@ struct CRGB bounce(long f, int pixelIndex) {
 struct CRGB colorChase(long f, int pixelIndex) {
   if (f < 0) return NULL_COLOR;
   int j = 9;
-  if (pixelIndex >= f%PATTERN_ROW && pixelIndex <= f%PATTERN_ROW+j)
+  if (pixelIndex >= f%VIRTUAL_LENGTH && pixelIndex <= f%VIRTUAL_LENGTH+j)
     return color1;
   return color2;
 }
@@ -92,7 +92,7 @@ struct CRGB colorWipeMeter(long f, int pixelIndex) {
   if (f == -2) return NULL_COLOR;
     
   if (f == -1) {
-    params[0] = random(0,PATTERN_ROW);
+    params[0] = random(0,VIRTUAL_LENGTH);
     return NULL_COLOR;
   }
   
@@ -107,7 +107,7 @@ struct CRGB colorWipeMeterGradient(long f, int pixelIndex) {
   if (f == -2) return NULL_COLOR;
   
   if (f == -1) {
-    params[0] = random(PATTERN_ROW);
+    params[0] = random(VIRTUAL_LENGTH);
     return NULL_COLOR;
   }
 
@@ -123,8 +123,8 @@ struct CRGB flickerStrobeTwo(long f, int pixelIndex) {
   
   if (f == -1) {
     // Select two random pixels.
-    params[0] = random(PATTERN_ROW);
-    params[1] = random(PATTERN_ROW);
+    params[0] = random(VIRTUAL_LENGTH);
+    params[1] = random(VIRTUAL_LENGTH);
     return NULL_COLOR;
   }
   
@@ -144,10 +144,10 @@ struct CRGB flickerStrobeFour(long f, int pixelIndex) {
   
   if (f == -1) {
     // Select four random pixels.
-    params[0] = random(PATTERN_ROW);
-    params[1] = random(PATTERN_ROW);
-    params[2] = random(PATTERN_ROW);
-    params[3] = random(PATTERN_ROW);
+    params[0] = random(VIRTUAL_LENGTH);
+    params[1] = random(VIRTUAL_LENGTH);
+    params[2] = random(VIRTUAL_LENGTH);
+    params[3] = random(VIRTUAL_LENGTH);
     return NULL_COLOR;
   }
   

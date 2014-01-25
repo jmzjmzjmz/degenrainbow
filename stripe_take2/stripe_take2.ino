@@ -46,13 +46,21 @@ int _i = 0, j = 0, k = 0;
 /* These don't seem to work as #define since they're used in other tabs ... */
 //STRIPE 4 top 180
 
+unsigned int SMALLEST_STRIP_LENGTH = 154;
 
-unsigned int LEAD_ROW = 264;
-unsigned int MAIN_ROW = 180; //264;//32; 
-unsigned int BOT_ROW = 154; //238;// 18; 
-unsigned int NUM_PIXELS = BOT_ROW + MAIN_ROW;
-//switch out MAIN_ROW with LEAD_ROW to effect how many pixels the pattern takes into account
-unsigned int PATTERN_ROW = MAIN_ROW;
+unsigned int OUTER_STRIP_LENGTH = 180;
+unsigned int INNER_STRIP_LENGTH = 154;
+
+unsigned int NUM_PIXELS = INNER_STRIP_LENGTH + OUTER_STRIP_LENGTH;
+unsigned int VIRTUAL_LENGTH = OUTER_STRIP_LENGTH;
+
+// unsigned int LEAD_ROW = 264;
+
+
+// unsigned int OUTER_STRIP_LENGTH = 180; //264;//32; 
+// unsigned int BOT_ROW = 154; //238;// 18; 
+// unsigned int NUM_PIXELS = BOT_ROW + OUTER_STRIP_LENGTH;
+//switch out OUTER_STRIP_LENGTH with LEAD_ROW to effect how many pixels the pattern takes into account
 
 int bottom_map[264+238];
 int scaled_bottom_map[264+238];
@@ -73,7 +81,7 @@ struct CRGB NULL_COLOR;
 
 unsigned int incomingBrightness=0;
 unsigned int incomingRate=0;
-unsigned int rate = 50;
+unsigned int rate = 20;
 unsigned int frameOffset = 0;
 unsigned int patternByte = NULL_PATTERN;
 unsigned int mappingByte = NULL_PATTERN;
@@ -84,8 +92,11 @@ unsigned long lastTime = -1;
 
 float brightness = 1.0;
 int r1 = 127,  g1 = 0,  b1 = 0, 
-    r2 = 0,   g2 = 0,   b2 = 127, 
-    heartOffset = 0,   xFader = 0,   scaling = 0;
+    r2 = 0,    g2 = 0,  b2 = 127;
+
+
+unsigned int xFader = 0;
+unsigned int rainbowMappingByte = 0;
 
 float params[20];
 struct CRGB color1, color2, color3;
@@ -104,6 +115,11 @@ Pattern pattern;
 typedef int (*Mapping)(long, int);
 Mapping mappings[128];
 Mapping mapping = &peak;
+
+// linear
+// bottomToTop
+// topToBottom
+// 
 
 unsigned long currentTime;
 unsigned long lastMillis;
@@ -136,21 +152,25 @@ void setup() {
 
   //SPI0_CTAR0 |= 0x00000000; //<====== HERE
 
-//Create look up table for normal bottom stripe
-for(int i = MAIN_ROW; i < NUM_PIXELS; i++){
-bottom_map[i] = (int)fscale(i,MAIN_ROW,NUM_PIXELS - 1,MAIN_ROW -1,0,-.05);
-}
+  //Create look up table for normal bottom stripe
+  for(int i = OUTER_STRIP_LENGTH; i < NUM_PIXELS; i++){
+    // bottom_map[i] = (int)fscale(i,OUTER_STRIP_LENGTH,NUM_PIXELS - 1,OUTER_STRIP_LENGTH -1,0,-.05);
+    bottom_map[i] = (int)map(i,OUTER_STRIP_LENGTH,NUM_PIXELS - 1,OUTER_STRIP_LENGTH -1,0);
+  }
 
-//i want to scale 
-//Create look up table for scaled bottom
-for(int i = MAIN_ROW; i < NUM_PIXELS; i++){
-scaled_bottom_map[i] = (int)fscale(i,MAIN_ROW,NUM_PIXELS - 1,MAIN_ROW -1,0,-.05);
-}
 
-//Create look up table for scaled top
-for(int i = MAIN_ROW; i < NUM_PIXELS; i++){
-scaled_top_map[i] = (int)fscale(i,MAIN_ROW,NUM_PIXELS - 1,MAIN_ROW -1,0,-.05);
-}
+
+  // //Create look up table for scaled top
+  // for(int i = 0; i < OUTER_STRIP_LENGTH; i++){
+  //   scaled_top_map[i] = (int)fscale(i,0,OUTER_STRIP_LENGTH - 1,OUTER_STRIP_LENGTH -1, 0, -.05);
+  // }
+
+  // //Create look up table for scaled bottom
+  // for(int i = OUTER_STRIP_LENGTH; i < NUM_PIXELS; i++){
+  //   scaled_bottom_map[i] = (int)fscale(i,OUTER_STRIP_LENGTH,NUM_PIXELS - 1,OUTER_STRIP_LENGTH -1,0,-.05);
+  // }
+
+
 
   
   setColors();
@@ -184,7 +204,7 @@ scaled_top_map[i] = (int)fscale(i,MAIN_ROW,NUM_PIXELS - 1,MAIN_ROW -1,0,-.05);
   mappings[4] = &valley;
   mappings[5] = &dither;
 
-  pattern = &rainbow;
+  pattern = &rainbowCycle;
   pattern(-2, 0);
 
   startedAt = 0;
@@ -247,9 +267,9 @@ void read() {
           r2 = (unsigned char)inputString.charAt(7);
           g2 = (unsigned char)inputString.charAt(9);
           b2 = (unsigned char)inputString.charAt(8);
-          heartOffset = (unsigned char)inputString.charAt(10);
+          frameOffset = (unsigned char)inputString.charAt(10);
           xFader = (unsigned char)inputString.charAt(11);
-          scaling = (unsigned char)inputString.charAt(12);
+         rainbowMappingByte = (unsigned char)inputString.charAt(12);
 
           brightness = ((unsigned char)inputString.charAt(13))/127.0;
 
@@ -273,9 +293,9 @@ void read() {
         }
 
     Serial.println("vari'z:");
-       Serial.println(heartOffset);
+       Serial.println(frameOffset);
        Serial.println(xFader);
-       Serial.println(scaling);
+       Serial.println(rainbowMappingByte);
        Serial.println("frame ");
        Serial.println(frame);
        
@@ -354,41 +374,30 @@ void loop() {
 
   // int t = (currentTime + timesCycled * 256);
 
+  if (rate != 127) { //FREEEEEEEEEZE (why does processing's 0 also fuck with it?)
+    frame = (currentTime + internalTimeSmoother) / rate + 1;//+1 to avoid dividing by 0
+    freezeBool = false;
+  }
 
-if(rate != 127){ //FREEEEEEEEEZE (why does processing's 0 also fuck with it?)
+  //frame offset
+  frame += frameOffset;
 
-  frame = (currentTime + internalTimeSmoother) / rate +1;//+1 to avoid dividing by 0
-freezeBool = false;
-
-}
-
-//frame offset
-if(heartOffset != 0){
-frameOffset = (heartOffset - 64) * 20;
-frame = frame + frameOffset;
-}
-
-
-
- // if (currentTime >= loopTime + rate) { 
+  // if (currentTime >= loopTime + rate) { 
 
   if (frame != lastFrame)
     pattern(-1, 0); // Per frame initialization
 
   lastFrame = frame;
 
+  //determines what pattern to run on the top strip
 
-
-//determines what pattern to run on the top strip
-
-  for (_i = 0; _i < MAIN_ROW; _i++) {
+  for (_i = 0; _i < OUTER_STRIP_LENGTH; _i++) {
 
     int j = mapping(frame, _i);
 
+    color = pattern(frame, j);
 
-color = pattern(frame, j);
-
-  if (brightness < 1) {
+    if (brightness < 1) {
       color.r = lerp(0, color.r, brightness);
       color.g = lerp(0, color.g, brightness);
       color.b = lerp(0, color.b, brightness);
@@ -400,31 +409,26 @@ color = pattern(frame, j);
 
   }
 
-//SHORTER,BOTTOM ROW MIMICS TOP 'MAIN' ROW
-    // i wanna map i from 180-333 to 179-0
-    for (_i = MAIN_ROW; _i < NUM_PIXELS; _i++) {
+  //SHORTER,BOTTOM ROW MIMICS TOP 'MAIN' ROW
+  // i wanna map i from 180-333 to 179-0
+  for (_i = OUTER_STRIP_LENGTH; _i < NUM_PIXELS; _i++) {
     leds[_i].r = leds[bottom_map[_i]].r;
     leds[_i].g = leds[bottom_map[_i]].g;
     leds[_i].b = leds[bottom_map[_i]].b;
   }
 
+  if(freezeBool == false){
+    showAll();  
+  }
 
-if(freezeBool == false){
-  showAll();  
-}
-
-if(patternByte ==64 && rate == 127){
-  showAll();
-freezeBool = true;
-}
-
+  if(patternByte ==64 && rate == 127){
+    showAll();
+  freezeBool = true;
+  }
 
   if (frame >= MAX_FRAME) { 
     frame = 0;
   } 
-    
-
-
 
   if (light)
     digitalWrite(13, HIGH);
