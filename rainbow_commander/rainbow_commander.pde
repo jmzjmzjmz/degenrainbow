@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 final boolean DEBUG = false; // osc
-final boolean DEBUG_SERIAL = false;
+final boolean DEBUG_SERIAL = true;
 
 final String PRESET_FILE = "presets.txt";
 
@@ -16,6 +16,7 @@ final String RF_SERIAL_PORT = "/dev/tty.usbmodem1d11";
 //final String RF_SERIAL_PORT = "/dev/tty.usdhasod";
 final String SERIAL_PORT = "/dev/tty.usbserial-AH01PAU0";
 //final String SERIAL_PORT = "/dev/tty.usbmodem24741";
+
 
 final int INITIAL_PATTERN = 80;
 

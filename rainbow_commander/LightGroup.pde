@@ -205,7 +205,7 @@ class LightGroup {
 
   public void sendMessage() {
 
-    byte[] serialData = new byte[14];
+    byte[] serialData = new byte[15];
     color color1 = colorPicker1.getColorValue();
     color color2 = colorPicker2.getColorValue();
     float a;
@@ -232,6 +232,8 @@ class LightGroup {
 
     serialData[13] = (byte)(brightness * MASTER_BRIGHTNESS);
     serialData[14] = (byte)DELIMETER;
+
+    println(serialData);
 
     for (int i = 0; i < serialData.length; i++) {
       messageQueue.offer(serialData[i]);
