@@ -33,6 +33,9 @@ struct CRGB {
 struct CRGB *leds;
 struct CRGB *temp_leds;
 int _i = 0, j = 0, k = 0;
+
+
+
 #define PIN 4
 
 // Access to the pixel strip
@@ -101,24 +104,40 @@ struct CRGB NULL_COLOR;
 
 #define MAX_FRAME 100000
 
-unsigned int incomingBrightness=0;
-unsigned int incomingRate=0;
+
 unsigned int rate = 70;
-unsigned int frameOffset = 0;
 unsigned int patternByte = NULL_PATTERN;
 unsigned int mappingByte = NULL_PATTERN;
+int r1 = 127,  
+    g1 = 0,  
+    b1 = 0, 
+    r2 = 0,    
+    g2 = 0,  
+    b2 = 127;
+unsigned int frameOffset = 0;
+unsigned int crossfadeDuration = 5000; // millis
+unsigned int rainbowMappingByte = 0;
+float brightness = 1.0;
+
+
+unsigned int prev_frameOffset, 
+             prev_rate;
+
+//RainbowMapping prev_rainbowMapping;
+
+
+int prev_r1,  
+    prev_g1, 
+    prev_b1,
+    prev_r2,  
+    prev_g2,
+    prev_b2;
+
+float prev_brightness;
 
 // unix timestamp that the sketch starts at
 unsigned long startedAt = 0;
 unsigned long lastTime = -1;
-
-float brightness = 1.0;
-int r1 = 127,  g1 = 0,  b1 = 0, 
-    r2 = 0,    g2 = 0,  b2 = 127;
-
-
-unsigned int xFader = 0;
-unsigned int rainbowMappingByte = 0;
 
 float params[20];
 struct CRGB color1, color2, color3;
@@ -133,17 +152,20 @@ long lastFrame = -1;
 typedef CRGB (*Pattern)(long, int);
 Pattern patterns[128];
 Pattern pattern;
+Pattern prev_pattern;
+
 
 typedef int (*Mapping)(long, int);
 Mapping mappings[128];
 Mapping mapping = &peak;
-
+Mapping prev_mapping;
 // linear
 // bottomToTop
 // topToBottom
 // 
 
 unsigned long currentTime;
+unsigned long lastCommandTime = 0;
 unsigned long lastMillis;
 unsigned long internalTimeSmoother;
 
@@ -278,11 +300,26 @@ void read() {
 
         // Pattern.
         if (addr == myADDRESS) {
+
+          prev_frameOffset = frameOffset;
+          // prev_crossfadeDuration = crossfadeDuration;
+          // prev_rainbowMapping = rainbowMapping;
+          prev_rate = rate;
+          prev_pattern = pattern;
+          prev_mapping = mapping;
+          prev_r1 = r1;
+          prev_g1 = g1;
+          prev_b1 = b1;
+          prev_r2 = r2;
+          prev_g2 = g2;
+          prev_b2 = b2;
+          prev_brightness = brightness;
+
+          lastCommandTime = currentTime;  
         
           rate = (unsigned char)inputString.charAt(1);// + 1;
           patternByte = (unsigned char)inputString.charAt(2);
           mappingByte = (unsigned char)inputString.charAt(3);
-
           r1 = (unsigned char)inputString.charAt(4);
           g1 = (unsigned char)inputString.charAt(6);
           b1 = (unsigned char)inputString.charAt(5);
@@ -290,9 +327,8 @@ void read() {
           g2 = (unsigned char)inputString.charAt(9);
           b2 = (unsigned char)inputString.charAt(8);
           frameOffset = (unsigned char)inputString.charAt(10);
-          xFader = (unsigned char)inputString.charAt(11);
-         rainbowMappingByte = (unsigned char)inputString.charAt(12);
-
+          // crossfadeDuration = (unsigned char)inputString.charAt(11);
+          rainbowMappingByte = (unsigned char)inputString.charAt(12);
           brightness = ((unsigned char)inputString.charAt(13))/127.0;
 
           setColors();
@@ -314,14 +350,14 @@ void read() {
 
         }
 
-    Serial.println("vari'z:");
-       Serial.println(frameOffset);
-       Serial.println(xFader);
-       Serial.println(rainbowMappingByte);
-       Serial.println("frame ");
-       Serial.println(frame);
+        Serial.println("vari'z:");
+        Serial.println(frameOffset);
+        Serial.println(crossfadeDuration);
+        Serial.println(rainbowMappingByte);
+        Serial.println("frame ");
+        Serial.println(frame);
        
-       Serial.println("===================== ");
+        Serial.println("===================== ");
 
       
 
@@ -364,13 +400,6 @@ uint32_t Color(byte r, byte g, byte b) {
   return 0x808080 | ((uint32_t)g << 16) | ((uint32_t)r << 8) | (uint32_t)b;
 }
 
-void setBrightnRate() {
-
-  rate = incomingRate;
-  brightness = incomingBrightness;
-
-}
-
 boolean freezeBool = false;
 
 void loop() {
@@ -406,12 +435,17 @@ void loop() {
 
   // if (currentTime >= loopTime + rate) { 
 
-  if (frame != lastFrame)
+  if (frame != lastFrame) {
     pattern(-1, 0); // Per frame initialization
-
+    if (prev_pattern != NULL) {
+      prev_pattern(-1, 0);
+    }
+  }
+  
   lastFrame = frame;
 
   //determines what pattern to run on the top strip
+
 
   for (_i = 0; _i < NUM_PIXELS; _i++) {
 
@@ -436,7 +470,32 @@ void loop() {
     leds[_i].g = color.g;
     leds[_i].b = color.b;
 
+    // run the last pattern.
+    if (lastCommandTime > 0 && 
+        crossfadeDuration > 0 && 
+        currentTime < lastCommandTime + crossfadeDuration) {
+
+      int j2 = prev_mapping(frame, k);
+      color = prev_pattern(frame, j2);
+      if (prev_brightness < 1) {
+        color.r = lerp(0, color.r, prev_brightness);
+        color.g = lerp(0, color.g, prev_brightness);
+        color.b = lerp(0, color.b, prev_brightness);
+      }
+      // float xfadePosition = map(currentTime, lastCommandTime, lastCommandTime + crossfadeDuration, 0, 1);
+
+      float xfadePosition = (currentTime - lastCommandTime) / (crossfadeDuration * 1.0);
+
+      leds[_i].r = lerp(color.r, leds[_i].r, xfadePosition);
+      leds[_i].g = lerp(color.g, leds[_i].g, xfadePosition);
+      leds[_i].b = lerp(color.b, leds[_i].b, xfadePosition);
+
+    }
+
+
   }
+
+
 
   // //SHORTER,BOTTOM ROW MIMICS TOP 'MAIN' ROW
   // // i wanna map i from 180-333 to 179-0
