@@ -205,20 +205,6 @@ class LightGroup {
 
   public void sendMessage() {
 
-    // Unfortunately, mappings go in the pattern slot
-    // We must send two "messages"
-    sendPatternMessage(pattern);
-    sendPatternMessage(mapping);
-
-  }
-
-  private void sendPatternMessage(int pattern) {
-
-    println(frameOffset);
-    println(crossfadeDuration);
-    println(fixedLength);
-    println("----");
-
     byte[] serialData = new byte[14];
     color color1 = colorPicker1.getColorValue();
     color color2 = colorPicker2.getColorValue();
@@ -227,24 +213,25 @@ class LightGroup {
     serialData[0] = (byte)address;
     serialData[1] = (byte)rate;
     serialData[2] = (byte)pattern;
+    serialData[3] = (byte)mapping;
 
     a = alpha(color1)/255;
-    serialData[3] = (byte)(red(color1)   /2*a);
-    serialData[4] = (byte)(green(color1) /2*a);
-    serialData[5] = (byte)(blue(color1)  /2*a);
+    serialData[4] = (byte)(red(color1)   /2*a);
+    serialData[5] = (byte)(green(color1) /2*a);
+    serialData[6] = (byte)(blue(color1)  /2*a);
 
     a = alpha(color2)/255;
-    serialData[6] = (byte)(red(color2)   /2*a);
-    serialData[7] = (byte)(green(color2) /2*a);
-    serialData[8] = (byte)(blue(color2)  /2*a);
+    serialData[7] = (byte)(red(color2)   /2*a);
+    serialData[8] = (byte)(green(color2) /2*a);
+    serialData[9] = (byte)(blue(color2)  /2*a);
 
     // Ignore third color.
-    serialData[9] =  (byte)frameOffset;
-    serialData[10] = (byte)crossfadeDuration;
-    serialData[11] = (byte)(fixedLength ? 1 : 0);
+    serialData[10] =  (byte)frameOffset;
+    serialData[11] = (byte)crossfadeDuration;
+    serialData[12] = (byte)(fixedLength ? 1 : 0);
 
-    serialData[12] = (byte)(brightness * MASTER_BRIGHTNESS);
-    serialData[13] = (byte)DELIMETER;
+    serialData[13] = (byte)(brightness * MASTER_BRIGHTNESS);
+    serialData[14] = (byte)DELIMETER;
 
     for (int i = 0; i < serialData.length; i++) {
       messageQueue.offer(serialData[i]);
