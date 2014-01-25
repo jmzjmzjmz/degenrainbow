@@ -3,20 +3,20 @@ int forward(long frame, int i) {
 }
 
 int backward(long frame, int i) {
-  return PATTERN_ROW - 1 - i;
+  return VIRTUAL_LENGTH - 1 - i;
 }
 
 int peak(long frame, int i) {
-  if (i < PATTERN_ROW / 2) {
+  if (i < VIRTUAL_LENGTH / 2) {
     return i;
   } else { 
-    return PATTERN_ROW - 1 - i;
+    return VIRTUAL_LENGTH - 1 - i;
   }
 }
 
 int valley(long frame, int i) {
-  if (i < PATTERN_ROW / 2) {
-    return PATTERN_ROW / 2 - 1 - i;
+  if (i < VIRTUAL_LENGTH / 2) {
+    return VIRTUAL_LENGTH / 2 - 1 - i;
   } else { 
     return i;
   }
@@ -24,7 +24,7 @@ int valley(long frame, int i) {
 
 int dither(long frame, int i) {
   if (i % 2 == 0) {
-    return PATTERN_ROW - 1 - i;
+    return VIRTUAL_LENGTH - 1 - i;
   } else { 
     return i;
   }
