@@ -39,26 +39,37 @@ int _i = 0, j = 0, k = 0;
 
 #define NUM_POLES 8
 
-#define myADDRESS 4
+#define SAMPLE_STRIP 1
+
+#define myADDRESS 1
 
 /* These don't seem to work as #define since they're used in other tabs ... */
 //STRIPE 4 top 180
 
-unsigned int SMALLEST_STRIP_LENGTH = 154;
+#if SAMPLE_STRIP == 1
 
+  unsigned int SMALLEST_STRIP_LENGTH = 22;
+  unsigned int OUTER_STRIP_LENGTH = 24;
+  unsigned int INNER_STRIP_LENGTH = 22;
 
-#if myADDRESS == 1
-unsigned int OUTER_STRIP_LENGTH = 180;
-unsigned int INNER_STRIP_LENGTH = 154;
-#elif myADDRESS == 2
-unsigned int OUTER_STRIP_LENGTH = 208;
-unsigned int INNER_STRIP_LENGTH = 182;
-#elif myADDRESS == 3
-unsigned int OUTER_STRIP_LENGTH = 236;
-unsigned int INNER_STRIP_LENGTH = 210;
-#elif myADDRESS == 4
-unsigned int OUTER_STRIP_LENGTH = 264;
-unsigned int INNER_STRIP_LENGTH = 238;
+#else
+
+  unsigned int SMALLEST_STRIP_LENGTH = 154;
+
+  #if myADDRESS == 1
+  unsigned int OUTER_STRIP_LENGTH = 180;
+  unsigned int INNER_STRIP_LENGTH = 154;
+  #elif myADDRESS == 2
+  unsigned int OUTER_STRIP_LENGTH = 208;
+  unsigned int INNER_STRIP_LENGTH = 182;
+  #elif myADDRESS == 3
+  unsigned int OUTER_STRIP_LENGTH = 236;
+  unsigned int INNER_STRIP_LENGTH = 210;
+  #elif myADDRESS == 4
+  unsigned int OUTER_STRIP_LENGTH = 264;
+  unsigned int INNER_STRIP_LENGTH = 238;
+  #endif
+
 #endif
 
 unsigned int NUM_PIXELS = INNER_STRIP_LENGTH + OUTER_STRIP_LENGTH;
