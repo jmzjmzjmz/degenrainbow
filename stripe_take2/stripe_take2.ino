@@ -76,6 +76,7 @@ unsigned int incomingRate=0;
 unsigned int rate = 50;
 unsigned int frameOffset = 0;
 unsigned int patternByte = NULL_PATTERN;
+unsigned int mappingByte = NULL_PATTERN;
 
 // unix timestamp that the sketch starts at
 unsigned long startedAt = 0;
@@ -101,6 +102,7 @@ Pattern patterns[128];
 Pattern pattern;
 
 typedef int (*Mapping)(long, int);
+Mapping mappings[128];
 Mapping mapping = &peak;
 
 unsigned long currentTime;
@@ -199,6 +201,9 @@ void read() {
     char c = (char)Serial1.read();
     // Serial.println(c, DEC);
     inputString += c;
+
+     Serial.println(inputString);
+     
     if (c == 128) {
 
 
@@ -220,6 +225,8 @@ void read() {
 
 
       } else { 
+
+
 
         unsigned char addr = (unsigned char)inputString.charAt(0);
 
@@ -265,7 +272,6 @@ void read() {
 
         }
 
-
     Serial.println("vari'z:");
        Serial.println(heartOffset);
        Serial.println(xFader);
@@ -274,6 +280,7 @@ void read() {
        Serial.println(frame);
        
        Serial.println("===================== ");
+
       
 
 
