@@ -176,6 +176,12 @@ scaled_top_map[i] = (int)fscale(i,MAIN_ROW,NUM_PIXELS - 1,MAIN_ROW -1,0,-.05);
   patterns[79] = &colorWipeMeterGradient;
   patterns[80] = &pulseOnce;
 
+  mappings[1] = &forward;
+  mappings[2] = &backward;
+  mappings[3] = &peak;
+  mappings[4] = &valley;
+  mappings[5] = &dither;
+
   pattern = &rainbow;
   pattern(-2, 0);
 
@@ -226,40 +232,27 @@ void read() {
         
           rate = (unsigned char)inputString.charAt(1);// + 1;
           patternByte = (unsigned char)inputString.charAt(2);
-          //FIX
-          mappingByte = (unsigned char)inputString.charAt(2);
+          mappingByte = (unsigned char)inputString.charAt(3);
 
+          r1 = (unsigned char)inputString.charAt(4);
+          g1 = (unsigned char)inputString.charAt(6);
+          b1 = (unsigned char)inputString.charAt(5);
+          r2 = (unsigned char)inputString.charAt(7);
+          g2 = (unsigned char)inputString.charAt(9);
+          b2 = (unsigned char)inputString.charAt(8);
+          heartOffset = (unsigned char)inputString.charAt(10);
+          xFader = (unsigned char)inputString.charAt(11);
+          scaling = (unsigned char)inputString.charAt(12);
 
-          r1 = (unsigned char)inputString.charAt(3);
-          g1 = (unsigned char)inputString.charAt(5);
-          b1 = (unsigned char)inputString.charAt(4);
-          r2 = (unsigned char)inputString.charAt(6);
-          g2 = (unsigned char)inputString.charAt(8);
-          b2 = (unsigned char)inputString.charAt(7);
-          heartOffset = (unsigned char)inputString.charAt(9);
-          xFader = (unsigned char)inputString.charAt(10);
-          scaling = (unsigned char)inputString.charAt(11);
-
-          brightness = ((unsigned char)inputString.charAt(12))/127.0;
+          brightness = ((unsigned char)inputString.charAt(13))/127.0;
 
           setColors();
 
-          if (patternByte == 1) {
-            mapping = &forward;
-          } 
-          else if (patternByte == 2) {
-            mapping = &backward;
-          } 
-          else if (patternByte == 3) {
-            mapping = &peak;
-          } 
-          else if (patternByte == 4) {
-            mapping = &valley;
-          } 
-          else if (patternByte == 5) {
-            mapping = &dither;
-          } 
-          else if (patternByte == OFF_PATTERN) {
+          if (mappings[mappingByte] != NULL) {
+            mapping = mappings[mappingByte];
+          }
+
+          if (patternByte == OFF_PATTERN) {
             hideAll();
             showAll();
             isOff = true;
