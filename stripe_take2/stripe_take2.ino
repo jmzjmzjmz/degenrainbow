@@ -39,20 +39,31 @@ int _i = 0, j = 0, k = 0;
 
 #define NUM_POLES 8
 
-#define myADDRESS 1
-#define mySETADDRESS 10
-#define globalADDR 0
+#define myADDRESS 4
 
 /* These don't seem to work as #define since they're used in other tabs ... */
 //STRIPE 4 top 180
 
 unsigned int SMALLEST_STRIP_LENGTH = 154;
 
+
+#if myADDRESS == 1
 unsigned int OUTER_STRIP_LENGTH = 180;
 unsigned int INNER_STRIP_LENGTH = 154;
+#elif myADDRESS == 2
+unsigned int OUTER_STRIP_LENGTH = 208;
+unsigned int INNER_STRIP_LENGTH = 182;
+#elif myADDRESS == 3
+unsigned int OUTER_STRIP_LENGTH = 236;
+unsigned int INNER_STRIP_LENGTH = 210;
+#elif myADDRESS == 4
+unsigned int OUTER_STRIP_LENGTH = 264;
+unsigned int INNER_STRIP_LENGTH = 238;
+#endif
 
 unsigned int NUM_PIXELS = INNER_STRIP_LENGTH + OUTER_STRIP_LENGTH;
-unsigned int VIRTUAL_LENGTH = OUTER_STRIP_LENGTH;
+
+unsigned int VIRTUAL_LENGTH = SMALLEST_STRIP_LENGTH;
 
 // unsigned int LEAD_ROW = 264;
 
@@ -81,7 +92,7 @@ struct CRGB NULL_COLOR;
 
 unsigned int incomingBrightness=0;
 unsigned int incomingRate=0;
-unsigned int rate = 20;
+unsigned int rate = 70;
 unsigned int frameOffset = 0;
 unsigned int patternByte = NULL_PATTERN;
 unsigned int mappingByte = NULL_PATTERN;
@@ -255,7 +266,7 @@ void read() {
 
 
         // Pattern.
-        if (addr == myADDRESS || addr == mySETADDRESS || addr == globalADDR) {
+        if (addr == myADDRESS) {
         
           rate = (unsigned char)inputString.charAt(1);// + 1;
           patternByte = (unsigned char)inputString.charAt(2);
@@ -391,9 +402,16 @@ void loop() {
 
   //determines what pattern to run on the top strip
 
-  for (_i = 0; _i < OUTER_STRIP_LENGTH; _i++) {
+  for (_i = 0; _i < NUM_PIXELS; _i++) {
 
-    int j = mapping(frame, _i);
+    int k;
+    if (_i < OUTER_STRIP_LENGTH) {
+      k = map(_i, 0, OUTER_STRIP_LENGTH - 2, VIRTUAL_LENGTH - 1, 0);
+    } else { 
+      k = map(_i, OUTER_STRIP_LENGTH, NUM_PIXELS - 1, 0, VIRTUAL_LENGTH - 1);
+    }
+
+    int j = mapping(frame, k);
 
     color = pattern(frame, j);
 
@@ -409,13 +427,13 @@ void loop() {
 
   }
 
-  //SHORTER,BOTTOM ROW MIMICS TOP 'MAIN' ROW
-  // i wanna map i from 180-333 to 179-0
-  for (_i = OUTER_STRIP_LENGTH; _i < NUM_PIXELS; _i++) {
-    leds[_i].r = leds[bottom_map[_i]].r;
-    leds[_i].g = leds[bottom_map[_i]].g;
-    leds[_i].b = leds[bottom_map[_i]].b;
-  }
+  // //SHORTER,BOTTOM ROW MIMICS TOP 'MAIN' ROW
+  // // i wanna map i from 180-333 to 179-0
+  // for (_i = OUTER_STRIP_LENGTH; _i < NUM_PIXELS; _i++) {
+  //   leds[_i].r = leds[bottom_map[_i]].r;
+  //   leds[_i].g = leds[bottom_map[_i]].g;
+  //   leds[_i].b = leds[bottom_map[_i]].b;
+  // }
 
   if(freezeBool == false){
     showAll();  
