@@ -302,7 +302,6 @@ void read() {
         if (addr == myADDRESS) {
 
           prev_frameOffset = frameOffset;
-          // prev_crossfadeDuration = crossfadeDuration;
           // prev_rainbowMapping = rainbowMapping;
           prev_rate = rate;
           prev_pattern = pattern;

@@ -297,12 +297,13 @@ void expressSympathy(ControlEvent theEvent) {
     sympathizeEvents = true;
 
     String name = theEvent.name();
-    name = name.substring(0, name.indexOf("-"));
+    name = name.substring(0, name.lastIndexOf("-"));
 
     for (Object o : lightGroups) {
 
       LightGroup l = (LightGroup)o;
       String addr = name + "-" + l.address;
+
       Controller c = controlP5.getController(addr);
       
       // Controller groups are weird.
