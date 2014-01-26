@@ -9,9 +9,7 @@ class LiveReader implements OscReader {
     Matcher mappings = Pattern.compile("/mapping/(\\d+)").matcher(p);
     Matcher address = Pattern.compile("/address/(\\d+)").matcher(p);
     
-    
     if (presets.find() && theOscMessage.get(0).intValue() == 1) {
-    
       
       applyPreset(parseInt(presets.group(1)));
 
@@ -183,10 +181,50 @@ class LiveReader implements OscReader {
 
           int v = (int)(theOscMessage.get(0).floatValue() * 127);
 
-//          println("brightness " + v);
-
           LightGroup l = (LightGroup)lightGroups.get(i);
           l.setBrightness(v);
+          l.sendMessage();
+
+        }
+      }
+
+    } else if (p.equals("/crossfade")) { 
+
+      for (int i = 0; i < activeAddr.length; i++) {
+        if (activeAddr[i].equals(1.0)) {
+
+          int v = (int)(theOscMessage.get(0).floatValue() * 127);
+
+          LightGroup l = (LightGroup)lightGroups.get(i);
+          l.setCrossfadeDuration(v);
+          l.sendMessage();
+
+        }
+      }
+
+    } else if (p.equals("/offset")) { 
+
+      for (int i = 0; i < activeAddr.length; i++) {
+        if (activeAddr[i].equals(1.0)) {
+
+          int v = (int)(theOscMessage.get(0).floatValue() * 127);
+
+          LightGroup l = (LightGroup)lightGroups.get(i);
+          l.setFrameOffset(v);
+          l.sendMessage();
+
+        }
+      }
+
+    } else if (p.equals("/stretch")) { 
+
+      for (int i = 0; i < activeAddr.length; i++) {
+        if (activeAddr[i].equals(1.0)) {
+
+          int v = (int)(theOscMessage.get(0).floatValue() * 127);
+
+          LightGroup l = (LightGroup)lightGroups.get(i);
+          l.setFixedLength(v > 0);
           l.sendMessage();
 
         }

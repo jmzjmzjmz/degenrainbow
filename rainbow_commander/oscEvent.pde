@@ -2,13 +2,15 @@ interface OscReader {
   void read(OscMessage theOscMessage);
 }
 
-OscReader reader = new LemurReader(); //new LemurReader();
+OscReader lemurReader = new LemurReader();
+OscReader liveReader = new LiveReader();
 
 void oscEvent(OscMessage theOscMessage) {
 
   if (DEBUG) println("[OSC] " + theOscMessage.addrPattern());
 
-  reader.read(theOscMessage);
+  lemurReader.read(theOscMessage);
+  liveReader.read(theOscMessage);
 
 }
 

@@ -152,7 +152,7 @@ class LightGroup {
 
   public LightGroupSettings getSettings() {
 
-    return new LightGroupSettings(pattern, mapping, rate, brightness, color1, color2);
+    return new LightGroupSettings(pattern, mapping, rate, brightness, color1, color2, frameOffset, crossfadeDuration, fixedLength);
 
   }
 
@@ -163,6 +163,9 @@ class LightGroup {
     setPattern(settings.pattern);
     setColor1(settings.color1);
     setColor2(settings.color2);
+    setFrameOffset(settings.frameOffset);
+    setCrossfadeDuration(settings.crossfadeDuration);
+    setFixedLength(settings.fixedLength);
   }
 
   public void setRate(int value) {
@@ -201,6 +204,18 @@ class LightGroup {
 
   public void setColor2(color c) {
     setColor2((int)red(c), (int)green(c), (int)blue(c));
+  }
+
+  public void setFrameOffset(int value) {
+    frameOffsetSlider.setValue(value);
+  }
+
+  public void setCrossfadeDuration(int value) {
+    crossfadeDurationSlider.setValue(value);
+  }
+
+  public void setFixedLength(boolean value) {
+    fixedLengthToggle.setValue(value);
   }
 
   public void sendMessage() {
