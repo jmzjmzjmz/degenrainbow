@@ -116,7 +116,7 @@ int r1 = 127,
     b2 = 127;
 unsigned int frameOffset = 0;
 unsigned int crossfadeDuration = 0; // millis
-unsigned int rainbowMappingByte = 0;
+bool fixedLength = false;
 float brightness = 1.0;
 
 
@@ -196,10 +196,11 @@ void setup() {
 
   //SPI0_CTAR0 |= 0x00000000; //<====== HERE
 
+  
+
   //Create look up table for normal bottom stripe
   for(int i = OUTER_STRIP_LENGTH; i < NUM_PIXELS; i++){
-    // bottom_map[i] = (int)fscale(i,OUTER_STRIP_LENGTH,NUM_PIXELS - 1,OUTER_STRIP_LENGTH -1,0,-.05);
-    bottom_map[i] = (int)map(i,OUTER_STRIP_LENGTH,NUM_PIXELS - 1,OUTER_STRIP_LENGTH -1,0);
+    bottom_map[i] = (int)fscale(i,OUTER_STRIP_LENGTH,NUM_PIXELS - 1,OUTER_STRIP_LENGTH -1,0,-.05);
   }
 
 
@@ -285,7 +286,6 @@ void read() {
         // Serial.print("Current time: ");
         // Serial.println(currentTime);
 
-
       } else { 
 
 
@@ -325,9 +325,14 @@ void read() {
           b2 = (unsigned char)inputString.charAt(8);
           frameOffset = (unsigned char)inputString.charAt(10);
           crossfadeDuration = 50.0 * (unsigned char)inputString.charAt(11);
-          rainbowMappingByte = (unsigned char)inputString.charAt(12);
+          fixedLength = (unsigned char)inputString.charAt(12) > 0;
           brightness = ((unsigned char)inputString.charAt(13))/127.0;
 
+          if (fixedLength) {
+            VIRTUAL_LENGTH = SMALLEST_STRIP_LENGTH;
+          } else { 
+            VIRTUAL_LENGTH = OUTER_STRIP_LENGTH;
+          }
 
           setColors();
 
@@ -351,7 +356,7 @@ void read() {
         Serial.println("vari'z:");
         Serial.println(frameOffset);
         Serial.println(crossfadeDuration);
-        Serial.println(rainbowMappingByte);
+        Serial.println(fixedLength);
         Serial.println("frame ");
         Serial.println(frame);
        
@@ -444,15 +449,30 @@ void loop() {
 
   //determines what pattern to run on the top strip
 
-
   for (_i = 0; _i < NUM_PIXELS; _i++) {
 
     int k;
-    if (_i < OUTER_STRIP_LENGTH) {
-      k = map(_i, 0, OUTER_STRIP_LENGTH - 2, VIRTUAL_LENGTH - 1, 0);
+
+    // bottom_map[_i];
+
+    if (fixedLength) {
+
+      if (_i < OUTER_STRIP_LENGTH) {
+        k = map(_i, 0, OUTER_STRIP_LENGTH - 2, 0, VIRTUAL_LENGTH - 1);
+      } else { 
+        k = map(_i, OUTER_STRIP_LENGTH, NUM_PIXELS - 1, VIRTUAL_LENGTH - 1, 0);
+      }
+
     } else { 
-      k = map(_i, OUTER_STRIP_LENGTH, NUM_PIXELS - 1, 0, VIRTUAL_LENGTH - 1);
+
+      if (_i < OUTER_STRIP_LENGTH) {
+        k = _i;
+      } else { 
+        k = bottom_map[_i];
+      }
+
     }
+
 
     int j = mapping(frame, k);
 
