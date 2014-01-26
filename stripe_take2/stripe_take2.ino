@@ -115,7 +115,7 @@ int r1 = 127,
     g2 = 0,  
     b2 = 127;
 unsigned int frameOffset = 0;
-unsigned int crossfadeDuration = 5000; // millis
+unsigned int crossfadeDuration = 0; // millis
 unsigned int rainbowMappingByte = 0;
 float brightness = 1.0;
 
@@ -233,7 +233,7 @@ void setup() {
   patterns[70] = &gradient;
   patterns[71] = &pulseSine;
   patterns[72] = &pulseSaw;
-  patterns[73] = &bounce;
+  patterns[73] = &betterRainbowCycle;
   patterns[74] = &colorWipe;
   patterns[75] = &colorAlternator;
   patterns[76] = &stripe;
@@ -248,7 +248,7 @@ void setup() {
   mappings[4] = &valley;
   mappings[5] = &dither;
 
-  pattern = &rainbowCycle;
+  pattern = &betterRainbowCycle;
   pattern(-2, 0);
 
   startedAt = 0;
@@ -265,8 +265,6 @@ void read() {
     char c = (char)Serial1.read();
     // Serial.println(c, DEC);
     inputString += c;
-
-     Serial.println(inputString);
      
     if (c == 128) {
 
@@ -326,9 +324,10 @@ void read() {
           g2 = (unsigned char)inputString.charAt(9);
           b2 = (unsigned char)inputString.charAt(8);
           frameOffset = (unsigned char)inputString.charAt(10);
-          // crossfadeDuration = (unsigned char)inputString.charAt(11);
+          crossfadeDuration = 50.0 * (unsigned char)inputString.charAt(11);
           rainbowMappingByte = (unsigned char)inputString.charAt(12);
           brightness = ((unsigned char)inputString.charAt(13))/127.0;
+
 
           setColors();
 

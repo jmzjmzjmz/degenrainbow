@@ -21,8 +21,15 @@ struct CRGB rainbow(long f, int pixelIndex) {
 // up/down variants to be replaced by mapping
 struct CRGB rainbowCycle(long f, int pixelIndex) {
   if (f < 0) return NULL_COLOR;
-  int j = f % 384 * 5;			
+  int j = f % 384 * 5;      
   return Wheel((pixelIndex * 384 / VIRTUAL_LENGTH + j));
+}
+
+// up/down variants to be replaced by mapping
+struct CRGB betterRainbowCycle(long f, int pixelIndex) {
+  if (f < 0) return NULL_COLOR;
+  int j = f % 384 * 5;      
+  return Wheel((pixelIndex * 384 * 3 / VIRTUAL_LENGTH + j));
 }
 
 struct CRGB colorAlternator(long f, int pixelIndex) {

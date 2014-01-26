@@ -17,7 +17,7 @@ class LightGroup {
   // Would have liked to make these arrays, but controlP5's reflection makes that harder.
   // Also addListener didn't work for controlGroups :(
   // DONT TOUCH
-  public color color1 = color(0), color2 = color(0);
+  public color color1 = color(255, 0, 0), color2 = color(0, 0, 255);
 
   public int r1, r2, g1, g2, b1, b2;
 
