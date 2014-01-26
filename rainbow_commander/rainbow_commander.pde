@@ -20,9 +20,9 @@ final String SERIAL_PORT = "/dev/tty.usbserial-AH01PAU0";
 
 final int INITIAL_PATTERN = 80;
 
-String IPAD_ADDRESS = "10.0.2.2";
+//String IPAD_ADDRESS = "10.0.2.2";
 
-//String IPAD_ADDRESS = "169.254.248.70";
+String IPAD_ADDRESS = "192.168.1.122";
 
 int IPAD_PORT = 8000;
 int MY_PORT = 12001;
@@ -224,7 +224,7 @@ void draw() {
 }
 
 void sendAllMessages() {
-  for (int i = 0; i < lightGroups.size(); i++) {
+  for (int i = 1; i < lightGroups.size(); i++) {
     LightGroup l = (LightGroup)lightGroups.get(i);
     l.sendMessage();
   }
@@ -267,7 +267,7 @@ void heartbeat() {
 
 void keyPressed() {
   if (key == ' '){
-      for (int i = 0; i < lightGroups.size(); i++) {
+      for (int i = 1; i < lightGroups.size(); i++) {
     ((LightGroup)lightGroups.get(i)).sendMessage();
 }
 }

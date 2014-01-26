@@ -248,7 +248,7 @@ class LightGroup {
     serialData[13] = (byte)(brightness * MASTER_BRIGHTNESS);
     serialData[14] = (byte)DELIMETER;
 
-    println(serialData);
+
 
     for (int i = 0; i < serialData.length; i++) {
       messageQueue.offer(serialData[i]);

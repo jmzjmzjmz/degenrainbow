@@ -35,16 +35,13 @@ struct CRGB *temp_leds;
 int _i = 0, j = 0, k = 0;
 
 
-
-#define PIN 4
-
 // Access to the pixel strip
-
-#define NUM_POLES 8
+#define PIN 4
 
 #define SAMPLE_STRIP 1
 
 #define myADDRESS 1
+#define globalADDRESS 0
 
 /* These don't seem to work as #define since they're used in other tabs ... */
 //STRIPE 4 top 180
@@ -116,7 +113,13 @@ int r1 = 127,
     b2 = 127;
 unsigned int frameOffset = 0;
 unsigned int crossfadeDuration = 0; // millis
+unsigned int prev_crossfadeDuration = 0;
+float xfadePosition = 0;
 bool fixedLength = false;
+bool prev_fixedLength = false;
+
+bool isFading = false;
+
 float brightness = 1.0;
 
 
@@ -297,23 +300,26 @@ void read() {
 
 
         // Pattern.
-        if (addr == myADDRESS) {
+        if (addr == myADDRESS || addr == globalADDRESS && !isFading) {
+
+          // Pattern temp1 = prev_pattern;
+          // Mapping temp2 = prev_mapping;
 
           prev_frameOffset = frameOffset;
-          // prev_rainbowMapping = rainbowMapping;
           prev_rate = rate;
+          prev_fixedLength = fixedLength;
           prev_pattern = pattern;
           prev_mapping = mapping;
+          prev_brightness = brightness;
+          prev_crossfadeDuration = crossfadeDuration;
+
           prev_r1 = r1;
           prev_g1 = g1;
           prev_b1 = b1;
           prev_r2 = r2;
           prev_g2 = g2;
           prev_b2 = b2;
-          prev_brightness = brightness;
 
-          lastCommandTime = currentTime;  
-        
           rate = (unsigned char)inputString.charAt(1);// + 1;
           patternByte = (unsigned char)inputString.charAt(2);
           mappingByte = (unsigned char)inputString.charAt(3);
@@ -327,6 +333,7 @@ void read() {
           crossfadeDuration = 50.0 * (unsigned char)inputString.charAt(11);
           fixedLength = (unsigned char)inputString.charAt(12) > 0;
           brightness = ((unsigned char)inputString.charAt(13))/127.0;
+
 
           if (fixedLength) {
             VIRTUAL_LENGTH = SMALLEST_STRIP_LENGTH;
@@ -350,17 +357,17 @@ void read() {
             pattern = patterns[patternByte];
             pattern(-2, 0); // On select initialization
           }
-
+//crossfade duration is > 0
+          if(prev_pattern != pattern || prev_mapping != mapping) {
+            lastCommandTime = currentTime; 
+            Serial.println("new PATTERN/MAPPING");
+          }
         }
 
-        Serial.println("vari'z:");
-        Serial.println(frameOffset);
-        Serial.println(crossfadeDuration);
-        Serial.println(fixedLength);
-        Serial.println("frame ");
-        Serial.println(frame);
-       
-        Serial.println("===================== ");
+        // Serial.println("vari'z:");
+        // Serial.println(frameOffset);
+
+
 
       
 
@@ -451,31 +458,8 @@ void loop() {
 
   for (_i = 0; _i < NUM_PIXELS; _i++) {
 
-    int k;
-
-    // bottom_map[_i];
-
-    if (fixedLength) {
-
-      if (_i < OUTER_STRIP_LENGTH) {
-        k = map(_i, 0, OUTER_STRIP_LENGTH - 2, 0, VIRTUAL_LENGTH - 1);
-      } else { 
-        k = map(_i, OUTER_STRIP_LENGTH, NUM_PIXELS - 1, VIRTUAL_LENGTH - 1, 0);
-      }
-
-    } else { 
-
-      if (_i < OUTER_STRIP_LENGTH) {
-        k = _i;
-      } else { 
-        k = bottom_map[_i];
-      }
-
-    }
-
-
+    int k = i2k(_i, fixedLength);
     int j = mapping(frame, k);
-
     color = pattern(frame, j);
 
     if (brightness < 1) {
@@ -490,9 +474,9 @@ void loop() {
 
     // run the last pattern.
     if (lastCommandTime > 0 && 
-        crossfadeDuration > 0 && 
+        crossfadeDuration > 0 &&
         currentTime < lastCommandTime + crossfadeDuration) {
-
+      int k2 = i2k(_i, prev_fixedLength);
       int j2 = prev_mapping(frame, k);
       color = prev_pattern(frame, j2);
       if (prev_brightness < 1) {
@@ -502,13 +486,28 @@ void loop() {
       }
       // float xfadePosition = map(currentTime, lastCommandTime, lastCommandTime + crossfadeDuration, 0, 1);
 
-      float xfadePosition = (currentTime - lastCommandTime) / (crossfadeDuration * 1.0);
+      xfadePosition = (currentTime - lastCommandTime) / (crossfadeDuration * 1.0);
 
       leds[_i].r = lerp(color.r, leds[_i].r, xfadePosition);
       leds[_i].g = lerp(color.g, leds[_i].g, xfadePosition);
       leds[_i].b = lerp(color.b, leds[_i].b, xfadePosition);
 
+      isFading = true;
+
+      Serial.println("XFADING");
+        // Serial.println(xfadePosition);
+        // Serial.println("currentTime");
+        // Serial.println(currentTime);
+        // Serial.println("lastCommandTime");
+        // Serial.println(lastCommandTime);
+        // Serial.println("===================== ");
+
     }
+    else{
+      isFading = false;
+    }
+
+       
 
 
   }
@@ -545,6 +544,31 @@ void loop() {
 
 }
 
+int i2k(int i, bool fixedLength) {
+
+  int k;
+
+  if (fixedLength) {
+
+    if (i < OUTER_STRIP_LENGTH) {
+      k = map(i, 0, OUTER_STRIP_LENGTH - 2, 0, VIRTUAL_LENGTH - 1);
+    } else { 
+      k = map(i, OUTER_STRIP_LENGTH, NUM_PIXELS - 1, VIRTUAL_LENGTH - 1, 0);
+    }
+
+  } else { 
+
+    if (i < OUTER_STRIP_LENGTH) {
+      k = i;
+    } else { 
+      k = bottom_map[i];
+    }
+
+  }
+
+  return k;
+
+}
 
 
 /* Helper functions */
