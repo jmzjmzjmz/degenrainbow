@@ -151,6 +151,7 @@ boolean isOff = false;
 boolean advance = false;
 
 long frame = 0;
+long prev_frame;
 long lastFrame = -1;
 
 // typedef uint32_t (*Pattern)(long, int);
@@ -454,6 +455,8 @@ void loop() {
     freezeBool = false;
   }
 
+  prev_frame = frame + prev_frameOffset;
+  
   //frame offset
   frame += frameOffset;
 
@@ -496,8 +499,8 @@ void loop() {
       setColors(usePrevColors);
 
       int k2 = i2k(_i, prev_fixedLength);
-      int j2 = prev_mapping(frame, k);
-      prev_color = prev_pattern(frame, j2);
+      int j2 = prev_mapping(prev_frame, k);
+      prev_color = prev_pattern(prev_frame, j2);
       if (prev_brightness < 1) {
         prev_color.r = lerp(0, prev_color.r, prev_brightness);
         prev_color.g = lerp(0, prev_color.g, prev_brightness);

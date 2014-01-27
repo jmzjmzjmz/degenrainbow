@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 final boolean DEBUG = false; // osc
-final boolean DEBUG_SERIAL = true;
+final boolean DEBUG_SERIAL = false;
 
 final String PRESET_FILE = "presets.txt";
 
