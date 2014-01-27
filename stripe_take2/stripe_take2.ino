@@ -38,7 +38,7 @@ int _i = 0, j = 0, k = 0;
 // Access to the pixel strip
 #define PIN 4
 
-#define SAMPLE_STRIP 1
+#define SAMPLE_STRIP 0
 
 #define myADDRESS 1
 #define globalADDRESS 0
@@ -89,6 +89,7 @@ int scaled_bottom_map[264+238];
 int scaled_top_map[264+238];
 
 struct CRGB color;
+struct CRGB prev_color;
 struct CRGB NULL_COLOR;
 
 #define NULL_PATTERN 0
@@ -119,6 +120,7 @@ bool fixedLength = false;
 bool prev_fixedLength = false;
 
 bool isFading = false;
+bool usePrevColors = false;
 
 float brightness = 1.0;
 
@@ -143,7 +145,7 @@ unsigned long startedAt = 0;
 unsigned long lastTime = -1;
 
 float params[20];
-struct CRGB color1, color2, color3;
+struct CRGB color1, color2;
 
 boolean isOff = false;
 boolean advance = false;
@@ -221,7 +223,7 @@ void setup() {
 
 
   
-  setColors();
+  setColors(!usePrevColors);
 
   hideAll();
   showAll();
@@ -300,7 +302,7 @@ void read() {
 
 
         // Pattern.
-        if (addr == myADDRESS || addr == globalADDRESS && !isFading) {
+        if ((addr == myADDRESS || addr == globalADDRESS) && !isFading) {
 
           // Pattern temp1 = prev_pattern;
           // Mapping temp2 = prev_mapping;
@@ -341,7 +343,9 @@ void read() {
             VIRTUAL_LENGTH = OUTER_STRIP_LENGTH;
           }
 
-          setColors();
+          // if(crossfadeDuration == 0 ){
+            setColors(!usePrevColors);
+          // }
 
           if (mappings[mappingByte] != NULL) {
             mapping = mappings[mappingByte];
@@ -360,7 +364,7 @@ void read() {
 //crossfade duration is > 0
           if(prev_pattern != pattern || prev_mapping != mapping) {
             lastCommandTime = currentTime; 
-            Serial.println("new PATTERN/MAPPING");
+            // Serial.println("new PATTERN/MAPPING");
           }
         }
 
@@ -390,8 +394,9 @@ void read() {
 
 }
 
-void setColors() {
+void setColors(bool prev) {
 
+if(prev == true){
   color1.r = r1;
   color1.g = g1;
   color1.b = b1;
@@ -399,7 +404,16 @@ void setColors() {
   color2.r = r2;
   color2.g = g2;
   color2.b = b2;
+}
+else{
+  color1.r = prev_r1;
+  color1.g = prev_g1;
+  color1.b = prev_b1;
   
+  color2.r = prev_r2;
+  color2.g = prev_g2;
+  color2.b = prev_b2;
+}
   // color3.r = r3;
   // color3.g = g3;
   // color3.b = b3;
@@ -458,6 +472,8 @@ void loop() {
 
   for (_i = 0; _i < NUM_PIXELS; _i++) {
 
+    setColors(!usePrevColors);
+    
     int k = i2k(_i, fixedLength);
     int j = mapping(frame, k);
     color = pattern(frame, j);
@@ -476,25 +492,28 @@ void loop() {
     if (lastCommandTime > 0 && 
         crossfadeDuration > 0 &&
         currentTime < lastCommandTime + crossfadeDuration) {
+
+      setColors(usePrevColors);
+
       int k2 = i2k(_i, prev_fixedLength);
       int j2 = prev_mapping(frame, k);
-      color = prev_pattern(frame, j2);
+      prev_color = prev_pattern(frame, j2);
       if (prev_brightness < 1) {
-        color.r = lerp(0, color.r, prev_brightness);
-        color.g = lerp(0, color.g, prev_brightness);
-        color.b = lerp(0, color.b, prev_brightness);
+        prev_color.r = lerp(0, prev_color.r, prev_brightness);
+        prev_color.g = lerp(0, prev_color.g, prev_brightness);
+        prev_color.b = lerp(0, prev_color.b, prev_brightness);
       }
       // float xfadePosition = map(currentTime, lastCommandTime, lastCommandTime + crossfadeDuration, 0, 1);
 
       xfadePosition = (currentTime - lastCommandTime) / (crossfadeDuration * 1.0);
 
-      leds[_i].r = lerp(color.r, leds[_i].r, xfadePosition);
-      leds[_i].g = lerp(color.g, leds[_i].g, xfadePosition);
-      leds[_i].b = lerp(color.b, leds[_i].b, xfadePosition);
+      leds[_i].r = lerp(prev_color.r, leds[_i].r, xfadePosition);
+      leds[_i].g = lerp(prev_color.g, leds[_i].g, xfadePosition);
+      leds[_i].b = lerp(prev_color.b, leds[_i].b, xfadePosition);
 
       isFading = true;
 
-      Serial.println("XFADING");
+       // Serial.println(isFading);
         // Serial.println(xfadePosition);
         // Serial.println("currentTime");
         // Serial.println(currentTime);
@@ -505,6 +524,7 @@ void loop() {
     }
     else{
       isFading = false;
+      // Serial.println(isFading);
     }
 
        

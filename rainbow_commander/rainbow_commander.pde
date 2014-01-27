@@ -107,7 +107,7 @@ void setup() {
   patterns[76] = "stripe";
   patterns[75] = "colorAlternator";
   patterns[74] = "colorWipe";
-  patterns[73] = "bounce";
+  patterns[73] = "SUPERrainbow";
   patterns[72] = "pulseSaw";
   patterns[71] = "pulseSine";
   patterns[70] = "gradient";
