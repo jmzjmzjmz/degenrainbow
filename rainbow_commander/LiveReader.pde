@@ -17,10 +17,21 @@ class LiveReader implements OscReader {
       
       for (int j = 0; j < activeAddr.length; j++) {
         if (activeAddr[j].equals(1.0)) {
-          
-          LightGroup l = (LightGroup)lightGroups.get(j);
+          LightGroup l0 = (LightGroup)lightGroups.get(0);
+          l0.setPattern(patternsToIndeces[parseInt(patterns.group(1))]);
+//          l0.sendMessage();
+          LightGroup l = (LightGroup)lightGroups.get(1);
           l.setPattern(patternsToIndeces[parseInt(patterns.group(1))]);
           l.sendMessage();
+          LightGroup l2 = (LightGroup)lightGroups.get(2);
+          l2.setPattern(patternsToIndeces[parseInt(patterns.group(1))]);
+          l2.sendMessage();
+          LightGroup l3 = (LightGroup)lightGroups.get(3);
+          l3.setPattern(patternsToIndeces[parseInt(patterns.group(1))]);
+          l3.sendMessage();
+          LightGroup l4 = (LightGroup)lightGroups.get(4);
+          l4.setPattern(patternsToIndeces[parseInt(patterns.group(1))]);
+          l4.sendMessage();
 
         }
       }
@@ -30,9 +41,21 @@ class LiveReader implements OscReader {
       for (int j = 0; j < activeAddr.length; j++) {
         if (activeAddr[j].equals(1.0)) {
           
-          LightGroup l = (LightGroup)lightGroups.get(j);
+          LightGroup l = (LightGroup)lightGroups.get(1);
           l.setMapping(parseInt(mappings.group(1))+1); // hack.
           l.sendMessage();
+          LightGroup l1 = (LightGroup)lightGroups.get(2);
+          l1.setMapping(parseInt(mappings.group(1))+1); // hack.
+          l1.sendMessage();
+          LightGroup l2 = (LightGroup)lightGroups.get(3);
+          l2.setMapping(parseInt(mappings.group(1))+1); // hack.
+          l2.sendMessage();
+          LightGroup l3 = (LightGroup)lightGroups.get(4);
+          l3.setMapping(parseInt(mappings.group(1))+1); // hack.
+          l3.sendMessage();
+
+
+
 
         }
       }
@@ -62,8 +85,14 @@ class LiveReader implements OscReader {
 
         for (int j = 0; j < activeAddr.length; j++) {
           if (activeAddr[j].equals(1.0)) {
-            LightGroup l = (LightGroup)lightGroups.get(j);
+            LightGroup l = (LightGroup)lightGroups.get(1);
             l.sendMessage();
+             LightGroup l2 = (LightGroup)lightGroups.get(2);
+            l2.sendMessage();
+             LightGroup l3 = (LightGroup)lightGroups.get(3);
+            l3.sendMessage();
+             LightGroup l4 = (LightGroup)lightGroups.get(4);
+            l4.sendMessage();
           }
         }
 
@@ -180,7 +209,6 @@ class LiveReader implements OscReader {
         if (activeAddr[i].equals(1.0)) {
 
           int v = (int)(theOscMessage.get(0).floatValue() * 127);
-
           LightGroup l = (LightGroup)lightGroups.get(i);
           l.setBrightness(v);
           l.sendMessage();

@@ -40,7 +40,7 @@ int _i = 0, j = 0, k = 0;
 
 #define SAMPLE_STRIP 0
 
-#define myADDRESS 1
+#define myADDRESS 4
 #define globalADDRESS 0
 
 /* These don't seem to work as #define since they're used in other tabs ... */
@@ -323,7 +323,7 @@ void read() {
           prev_g2 = g2;
           prev_b2 = b2;
 
-          rate = (unsigned char)inputString.charAt(1);// + 1;
+          rate = (unsigned char)inputString.charAt(1) + 1;
           patternByte = (unsigned char)inputString.charAt(2);
           mappingByte = (unsigned char)inputString.charAt(3);
           r1 = (unsigned char)inputString.charAt(4);
@@ -425,7 +425,6 @@ uint32_t Color(byte r, byte g, byte b) {
   return 0x808080 | ((uint32_t)g << 16) | ((uint32_t)r << 8) | (uint32_t)b;
 }
 
-boolean freezeBool = false;
 
 void loop() {
 
@@ -450,10 +449,8 @@ void loop() {
 
   // int t = (currentTime + timesCycled * 256);
 
-  if (rate != 127) { //FREEEEEEEEEZE (why does processing's 0 also fuck with it?)
-    frame = (currentTime + internalTimeSmoother) / rate + 1;//+1 to avoid dividing by 0
-    freezeBool = false;
-  }
+  frame = (currentTime + internalTimeSmoother) / rate;//+1 to avoid dividing by 0
+
 
   prev_frame = frame + prev_frameOffset;
   
@@ -545,14 +542,8 @@ void loop() {
   //   leds[_i].b = leds[bottom_map[_i]].b;
   // }
 
-  if(freezeBool == false){
     showAll();  
-  }
 
-  if(patternByte ==64 && rate == 127){
-    showAll();
-  freezeBool = true;
-  }
 
   if (frame >= MAX_FRAME) { 
     frame = 0;
