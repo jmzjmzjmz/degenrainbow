@@ -9,8 +9,7 @@
 for(i=0;i < sizeof(Patterns.x);i++){
  Patterns.x[i] = 0;
 }" trigger_script="x" trigger_type="0" trigger="2" osc_message="/Presets/deselectPatterns" midi_message="0x90,0x90,0,0" midi_target="-1" flag="1"/>
-<SCRIPT name="deselectPulse()" script="Presets.x[13] = 0;
-" trigger_script="x" trigger_type="0" trigger="1" osc_message="/Presets/deselectPulse" midi_message="0x90,0x90,0,0" midi_target="-1" flag="1"/>
+<SCRIPT name="deselectPulse()" script="" trigger_script="x" trigger_type="0" trigger="1" osc_message="/Presets/deselectPulse" midi_message="0x90,0x90,0,0" midi_target="-1" flag="1"/>
 </WINDOW>
 <WINDOW class="Switches" text="Patterns" x="349" y="0" width="677" height="269" id="6" state="1" group="0" font="tahoma,10,0" send="1" osc_target="-2" midi_target="-2" kbmouse_target="-2" capture="1" color="2122383360,7077888" column="6" label="0" multicolor="1" multilabel="1" paint="1" radio="1" row="3">
 <PARAM name="x=" value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000" send="17" osc_target="0" osc_trigger="1" osc_message="/Patterns/x" midi_target="0" midi_trigger="1" midi_message="0x90,0x90,0,17" midi_scale="0,16383" osc_scale="0.000000,1.000000" kbmouse_target="-1" kbmouse_trigger="1" kbmouse_message="0,0,0" kbmouse_scale="0,1,0,1"/>
