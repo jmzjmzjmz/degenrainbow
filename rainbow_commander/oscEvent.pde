@@ -24,5 +24,4 @@ void oscMessage(String addr, float value) {
 void setActiveAddr(Object[] activeAddr) {
   
   this.activeAddr = activeAddr;
-
 }

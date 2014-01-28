@@ -22,7 +22,7 @@ final int INITIAL_PATTERN = 80;
 
 //String IPAD_ADDRESS = "10.0.2.2";
 
-String IPAD_ADDRESS = "192.168.1.31";
+String IPAD_ADDRESS = "192.168.1.122";
 
 int IPAD_PORT = 8000;
 int MY_PORT = 12001;

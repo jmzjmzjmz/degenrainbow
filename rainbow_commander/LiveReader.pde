@@ -12,7 +12,8 @@ class LiveReader implements OscReader {
     if (presets.find() && theOscMessage.get(0).intValue() == 1) {
       
       applyPreset(parseInt(presets.group(1)));
-
+      sendFeedback();
+      
     } else if (patterns.find() && theOscMessage.get(0).intValue() == 1) {
       
       for (int j = 0; j < activeAddr.length; j++) {
@@ -260,6 +261,65 @@ class LiveReader implements OscReader {
 
     }
     
+  }
+ 
+   void sendFeedback() {
+
+    int feedbackIndex = 0;
+
+    for (int i = 0; i < activeAddr.length; i++) {
+      if (activeAddr[i].equals(1.0)) {
+        feedbackIndex = i;
+        break;
+      }
+    }
+
+    LightGroup l = (LightGroup)lightGroups.get(feedbackIndex);
+
+    oscMessage("/RedSlider1/x",   map(red(l.color1), 0, 255, 0, 1));
+    oscMessage("/GreenSlider1/x", map(green(l.color1), 0, 255, 0, 1));
+    oscMessage("/BlueSlider1/x",  map(blue(l.color1), 0, 255, 0, 1));
+
+    oscMessage("/RedSlider2/x",   map(red(l.color2), 0, 255, 0, 1));
+    oscMessage("/GreenSlider2/x", map(green(l.color2), 0, 255, 0, 1));
+    oscMessage("/BlueSlider2/x",  map(blue(l.color2), 0, 255, 0, 1));
+
+    oscMessage("/RateSlider/x",   map(l.rate, 0, 127, 0, 1));
+    oscMessage("/BrightnessSlider/x", map(l.brightness, 0, 127, 0, 1));
+
+//    // Send pattern message.
+//    
+//    int patternIndex = 0;
+//    for (int i = 0; i < patternsToIndeces.length; i++) {
+//      if (patternsToIndeces[i] == l.pattern) {
+//        patternIndex = i;
+//      }
+//    }
+//
+//    float[] patternMessage = new float[patternsToIndeces.length];
+//    for (int i = 0; i < patternMessage.length; i++) {
+//      if (i == patternIndex) {
+//        patternMessage[i] = 1.0;
+//      }
+//    }
+//
+//    OscMessage message = new OscMessage("/Patterns/x");
+//    message.add(patternMessage);
+//    oscP5.send(message, myRemoteLocation);
+//
+//    // Send mapping message.
+//
+//    int mappingIndex = l.mapping - 1; // HACK
+//    message = new OscMessage("/Mappings/x");
+//    float[] mappingMessage = new float[mappings.length];
+//    for (int i = 0; i < mappings.length; i++) {
+//      if (i == mappingIndex) {
+//        mappingMessage[i] = 1.0;
+//      }
+//    }
+//    message.add(mappingMessage);
+//    oscP5.send(message, myRemoteLocation);
+
   }
 
 }
